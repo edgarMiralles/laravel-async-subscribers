@@ -6,10 +6,12 @@ namespace EdgarMiralles\AsyncSubscribers\Jobs;
 
 use EdgarMiralles\AsyncSubscribers\Contracts\AsyncSubscriber;
 use EdgarMiralles\AsyncSubscribers\Contracts\SerializableEvent;
+use EdgarMiralles\AsyncSubscribers\SubscriberJobLogger;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Date;
 
 final class RunSubscriber implements ShouldQueue
 {
@@ -30,9 +32,14 @@ final class RunSubscriber implements ShouldQueue
         public int | array $backoff,
     ) {}
 
-    public function handle(Container $container): void
+    public function handle(Container $container, SubscriberJobLogger $logger): void
     {
+        $logger->consuming($this);
+        $startedAt = Date::now();
+
         $container->make($this->subscriber)->handle($this->event::fromArray($this->payload));
+
+        $logger->consumed($this, $startedAt->diffInMilliseconds(Date::now()));
     }
 
     public function displayName(): string

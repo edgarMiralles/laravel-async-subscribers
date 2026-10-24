@@ -9,6 +9,7 @@ use EdgarMiralles\AsyncSubscribers\Console\ClearSubscriptionsCommand;
 use EdgarMiralles\AsyncSubscribers\Console\ListSubscriptionsCommand;
 use EdgarMiralles\AsyncSubscribers\Contracts\EventBus;
 use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Queue\Events\JobQueued;
 use Illuminate\Support\ServiceProvider;
 
 final class AsyncSubscribersServiceProvider extends ServiceProvider
@@ -34,6 +35,10 @@ final class AsyncSubscribersServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->app->make('events')->listen(JobQueued::class, function (JobQueued $queued): void {
+            $this->app->make(SubscriberJobLogger::class)->enqueued($queued);
+        });
+
         if (! $this->app->runningInConsole()) {
             return;
         }

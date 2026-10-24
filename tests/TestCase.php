@@ -33,6 +33,7 @@ abstract class TestCase extends Testbench
             'database' => ':memory:',
             'prefix' => '',
         ]);
+        $app['config']->set('logging.default', 'null');
         $app['config']->set('async-subscribers.discover', [
             'EdgarMiralles\\AsyncSubscribers\\Tests\\Fixtures\\Subscribers\\' => __DIR__ . '/Fixtures/Subscribers',
         ]);

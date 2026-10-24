@@ -29,4 +29,10 @@ return [
      */
     'after_commit' => true,
 
+    /*
+     * Log each job when it is enqueued, when a worker starts it and when it finishes, tagged with job_uuid:
+     * the id Laravel keeps across retries and stores in failed_jobs.
+     */
+    'log' => env('ASYNC_SUBSCRIBERS_LOG', true),
+
 ];
