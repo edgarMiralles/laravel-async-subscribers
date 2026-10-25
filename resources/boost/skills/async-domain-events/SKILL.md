@@ -9,7 +9,7 @@ An event implements `SerializableEvent`. A subscriber implements `AsyncSubscribe
 
 ## Before you start
 
-- Find the existing events and subscribers, and match their location and naming: run `grep -rl "implements SerializableEvent" app` and `php artisan async-subscribers:list`.
+- Find the existing events and subscribers, and match their location and naming: run `php artisan async-subscribers:list`, and grep the `discover` directories for `implements SerializableEvent`.
 - If the project has none yet, ask the user where events and subscribers belong instead of inventing a layout.
 - Read `discover` in `config/async-subscribers.php` (default `app_path()`). It lists the directories searched for subscribers; a subscriber outside them is never found.
 
