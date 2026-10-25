@@ -7,13 +7,14 @@ namespace EdgarMiralles\AsyncSubscribers;
 use EdgarMiralles\AsyncSubscribers\Contracts\AsyncSubscriber;
 use ReflectionClass;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 
 final class SubscriptionFinder
 {
     /** @var array<string, list<Subscription>> */
     private static array $found = [];
 
-    /** @param  array<string, string>  $directories  namespace prefix => directory */
+    /** @param  array<array-key, string>  $directories  keys are ignored */
     public function __construct(
         private readonly SubscriptionResolver $resolver,
         private readonly array $directories,
@@ -30,7 +31,7 @@ final class SubscriptionFinder
     {
         $subscriptions = [];
 
-        foreach ($this->directories as $namespace => $directory) {
+        foreach ($this->directories as $directory) {
             if (! is_dir($directory)) {
                 continue;
             }
@@ -38,11 +39,7 @@ final class SubscriptionFinder
             $files = Finder::create()->files()->in($directory)->name('*Subscriber.php')->sortByName();
 
             foreach ($files as $file) {
-                $class = rtrim($namespace, '\\') . '\\' . str_replace(
-                    DIRECTORY_SEPARATOR,
-                    '\\',
-                    substr($file->getRelativePathname(), 0, -strlen('.php')),
-                );
+                $class = $this->classIn($file);
 
                 if ($this->isSubscriber($class)) {
                     $subscriptions[] = $this->resolver->resolve($class);
@@ -51,6 +48,15 @@ final class SubscriptionFinder
         }
 
         return $subscriptions;
+    }
+
+    private function classIn(SplFileInfo $file): string
+    {
+        $namespace = preg_match('/^namespace\s+([\w\\\\]+)\s*[;{]/m', $file->getContents(), $match) === 1
+            ? $match[1] . '\\'
+            : '';
+
+        return $namespace . $file->getBasename('.php');
     }
 
     /** @phpstan-assert-if-true class-string<AsyncSubscriber> $class */

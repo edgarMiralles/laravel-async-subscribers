@@ -34,9 +34,7 @@ abstract class TestCase extends Testbench
             'prefix' => '',
         ]);
         $app['config']->set('logging.default', 'null');
-        $app['config']->set('async-subscribers.discover', [
-            'EdgarMiralles\\AsyncSubscribers\\Tests\\Fixtures\\Subscribers\\' => __DIR__ . '/Fixtures/Subscribers',
-        ]);
+        $app['config']->set('async-subscribers.discover', [__DIR__ . '/Fixtures/Subscribers']);
 
         $app->singleton(HandledEvents::class);
     }

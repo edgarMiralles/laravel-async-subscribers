@@ -11,7 +11,7 @@ An event implements `SerializableEvent`. A subscriber implements `AsyncSubscribe
 
 - Find the existing events and subscribers, and match their location and naming: run `grep -rl "implements SerializableEvent" app` and `php artisan async-subscribers:list`.
 - If the project has none yet, ask the user where events and subscribers belong instead of inventing a layout.
-- Read `discover` in `config/async-subscribers.php` (default `'App\\' => app_path()`). A subscriber outside those directories is never found.
+- Read `discover` in `config/async-subscribers.php` (default `app_path()`). It lists the directories searched for subscribers; a subscriber outside them is never found.
 
 ## 1. The event
 
@@ -206,7 +206,7 @@ Worker output, Horizon, Sentry and Vapor all show the job under the subscriber's
 
 1. Is it in `async-subscribers:list`? If not, check that:
    - the file name ends in `Subscriber`;
-   - it sits under a `discover` directory with the matching namespace;
+   - it sits under a `discover` directory, declares its namespace, and its class is named like its file;
    - it implements `AsyncSubscriber` and is not abstract;
    - the cache is not stale (`async-subscribers:clear`).
 2. Does `handle()` type-hint the exact class being dispatched?

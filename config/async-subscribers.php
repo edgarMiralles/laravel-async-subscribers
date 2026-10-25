@@ -5,11 +5,12 @@ declare(strict_types=1);
 return [
 
     /*
-     * Namespace prefix => directory. Every *Subscriber.php file under each directory that implements
-     * AsyncSubscriber is registered.
+     * Directories searched, recursively, for *Subscriber.php files. Each class is read from its file's namespace
+     * and name, so one directory may hold several root namespaces. Every concrete class that implements
+     * AsyncSubscriber is registered. Keys are ignored, so the older namespace => directory form still works.
      */
     'discover' => [
-        'App\\' => app_path(),
+        app_path(),
     ],
 
     /*

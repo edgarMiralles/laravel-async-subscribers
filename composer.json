@@ -24,7 +24,9 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "EdgarMiralles\\AsyncSubscribers\\Tests\\": "tests/"
+            "EdgarMiralles\\AsyncSubscribers\\Tests\\": "tests/",
+            "Orders\\": "tests/Fixtures/Contexts/Orders/",
+            "Shipping\\": "tests/Fixtures/Contexts/Shipping/"
         }
     },
     "scripts": {
