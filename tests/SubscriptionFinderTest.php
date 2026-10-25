@@ -9,9 +9,11 @@ use EdgarMiralles\AsyncSubscribers\SubscriptionResolver;
 use EdgarMiralles\AsyncSubscribers\Tests\Fixtures\Subscribers\Billing\RecordRevenueSubscriber;
 use EdgarMiralles\AsyncSubscribers\Tests\Fixtures\Subscribers\Billing\ReverseRevenueSubscriber;
 use EdgarMiralles\AsyncSubscribers\Tests\Fixtures\Subscribers\SendReceiptSubscriber;
+use Orders\Application\NotifyWarehouseSubscriber;
+use Shipping\Application\BookCourierSubscriber;
 
 /**
- * @param  array<string, string>  $directories
+ * @param  array<array-key, string>  $directories
  * @return list<class-string>
  */
 function subscribersFoundIn(array $directories): array
@@ -22,9 +24,7 @@ function subscribersFoundIn(array $directories): array
 }
 
 it('finds only concrete AsyncSubscriber classes in *Subscriber.php files, ordered by path', function () {
-    $found = subscribersFoundIn([
-        'EdgarMiralles\\AsyncSubscribers\\Tests\\Fixtures\\Subscribers\\' => __DIR__ . '/Fixtures/Subscribers',
-    ]);
+    $found = subscribersFoundIn([__DIR__ . '/Fixtures/Subscribers']);
 
     expect($found)->toBe([
         RecordRevenueSubscriber::class,
@@ -33,25 +33,37 @@ it('finds only concrete AsyncSubscriber classes in *Subscriber.php files, ordere
     ]);
 });
 
-it('maps a namespace prefix onto its directory with or without the trailing backslash', function (string $namespace) {
-    $found = subscribersFoundIn([$namespace => __DIR__ . '/Fixtures/Subscribers/Billing']);
+it('reads each class from its file, so one directory can hold several root namespaces', function () {
+    $found = subscribersFoundIn([__DIR__ . '/Fixtures/Contexts']);
+
+    expect($found)->toBe([NotifyWarehouseSubscriber::class, BookCourierSubscriber::class]);
+});
+
+it('searches several directories in the order they are listed', function () {
+    $found = subscribersFoundIn([__DIR__ . '/Fixtures/Contexts', __DIR__ . '/Fixtures/Subscribers/Billing']);
+
+    expect($found)->toBe([
+        NotifyWarehouseSubscriber::class,
+        BookCourierSubscriber::class,
+        RecordRevenueSubscriber::class,
+        ReverseRevenueSubscriber::class,
+    ]);
+});
+
+it('still accepts the older namespace => directory form and ignores the namespace', function () {
+    $found = subscribersFoundIn(['Anything\\' => __DIR__ . '/Fixtures/Subscribers/Billing']);
 
     expect($found)->toBe([RecordRevenueSubscriber::class, ReverseRevenueSubscriber::class]);
-})->with([
-    'with backslash' => 'EdgarMiralles\\AsyncSubscribers\\Tests\\Fixtures\\Subscribers\\Billing\\',
-    'without backslash' => 'EdgarMiralles\\AsyncSubscribers\\Tests\\Fixtures\\Subscribers\\Billing',
-]);
+});
 
 it('skips a configured directory that does not exist', function () {
-    $found = subscribersFoundIn(['App\\Missing\\' => __DIR__ . '/Fixtures/Missing']);
+    $found = subscribersFoundIn([__DIR__ . '/Fixtures/Missing']);
 
     expect($found)->toBe([]);
 });
 
 it('rejects a discovered subscriber whose handle() takes no event', function () {
-    $find = fn (): array => subscribersFoundIn([
-        'EdgarMiralles\\AsyncSubscribers\\Tests\\Fixtures\\BrokenSubscribers\\' => __DIR__ . '/Fixtures/BrokenSubscribers',
-    ]);
+    $find = fn (): array => subscribersFoundIn([__DIR__ . '/Fixtures/BrokenSubscribers']);
 
     expect($find)->toThrow(InvalidSubscriber::class);
 });
